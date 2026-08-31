@@ -791,7 +791,7 @@ const crearUsuariosPrincipales = async () => {
       direccion: 'SENA - Oficina Principal',
       activo: true
     },
-    '✅ Administrador creado\n   📧 Usuario: admin@ecommerce.com\n   🔑 Password: admin1234\n',
+    '✅ Administrador creado\n   📧 Usuario: admin@MarketCOL.com\n   🔑 Password: admin1234\n',
     '✅ Administrador ya existe\n'
   );
 
@@ -799,7 +799,7 @@ const crearUsuariosPrincipales = async () => {
     {
       nombre: 'Auxiliar',
       apellido: 'Soporte',
-      email: 'auxiliar@MrketCOL.com',
+      email: 'auxiliar@MarketCOL.com',
       password: 'aux123',
       rol: 'auxiliar',
       telefono: '3009876543',

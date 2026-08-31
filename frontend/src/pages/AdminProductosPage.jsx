@@ -5,7 +5,7 @@
  * Gestión CRUD de productos con soporte para proveedores
  */
 import React, { useEffect, useState, useMemo, useCallback, memo, useRef } from 'react';
-import { Container, Card, Table, Button, Form, Alert, Badge, Row, Col, Dropdown, ButtonGroup, InputGroup } from 'react-bootstrap';
+import { Container, Card, Table, Button, Form, Alert, Badge, Row, Col, Dropdown, InputGroup } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
@@ -131,7 +131,7 @@ const AdminProductosPage = () => {
 
     try {
       const [prodResponse, catResponse, subcatResponse, provResponse] = await Promise.all([
-        api.get('/admin/productos?limite=1000'),
+        api.get('/admin/productos?limite=100'),
         api.get('/admin/categorias'),
         api.get('/admin/subcategorias'),
         api.get('/admin/proveedores?activo=true') // Cargar proveedores activos
