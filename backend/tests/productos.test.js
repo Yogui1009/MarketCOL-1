@@ -4,6 +4,12 @@ const app = require('../server');
 describe('Pruebas de caja blanca - productos', () => {
   let adminToken;
 
+  const crearProductoRequest = () => {
+    return request(app)
+      .post('/api/admin/productos')
+      .set('Authorization', `Bearer ${adminToken}`);
+};
+
   beforeAll(async () => {
     const loginResponse = await request(app)
       .post('/api/auth/login')
@@ -26,9 +32,7 @@ describe('Pruebas de caja blanca - productos', () => {
   });
 
   test('debe rechazar crear producto sin campos obligatorios', async () => {
-    const response = await request(app)
-      .post('/api/admin/productos')
-      .set('Authorization', `Bearer ${adminToken}`)
+    const response = await crearProductoRequest()
       .field('nombre', 'Producto prueba')
       .field('precio', '10000');
 
@@ -38,9 +42,7 @@ describe('Pruebas de caja blanca - productos', () => {
   });
 
   test('debe rechazar precio inválido al crear producto', async () => {
-    const response = await request(app)
-      .post('/api/admin/productos')
-      .set('Authorization', `Bearer ${adminToken}`)
+    const response = await crearProductoRequest()
       .field('nombre', 'Producto precio inválido')
       .field('precio', '0')
       .field('categoriaId', '1')
@@ -52,9 +54,7 @@ describe('Pruebas de caja blanca - productos', () => {
   });
 
   test('debe crear un producto válido', async () => {
-    const response = await request(app)
-      .post('/api/admin/productos')
-      .set('Authorization', `Bearer ${adminToken}`)
+    const response = await crearProductoRequest()
       .field('nombre', 'Producto prueba jest')
       .field('descripcion', 'Producto creado por pruebas')
       .field('precio', '15000')
@@ -68,9 +68,7 @@ describe('Pruebas de caja blanca - productos', () => {
   });
 
   test('debe gestionar stock de producto', async () => {
-    const createResponse = await request(app)
-      .post('/api/admin/productos')
-      .set('Authorization', `Bearer ${adminToken}`)
+    const createResponse = await crearProductoRequest()
       .field('nombre', `Producto stock ${Date.now()}`)
       .field('descripcion', 'Producto para pruebas de stock')
       .field('precio', '12000')
