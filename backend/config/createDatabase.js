@@ -3,7 +3,7 @@
  * SCRIPT DE INICIALIZACIÓN DE BASE DE DATOS
  * ============================================
  * Este script crea la base de datos si no existe.
- * Se ejecuta UNA sola vez antes de iniciar el servidor.
+ * Se ejecuta UNA sola vez antes de iniciar el servidor
  * Se invoca con el comando: npm run init-db (definido en package.json)
  */
 
