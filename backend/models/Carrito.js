@@ -37,39 +37,39 @@ const Carrito = sequelize.define('Carrito', {
 
   // Columna 'usuarioId' → Clave foránea (FK) que apunta a la tabla 'usuarios'
   // Indica QUÉ usuario es dueño de este item del carrito
-  usuarioId: {
-    type: DataTypes.INTEGER,           // Tipo INT, debe coincidir con usuarios.id
-    allowNull: false,                  // Obligatorio: todo item pertenece a un usuario
-    references: {                      // Define la relación de FK en la BD
-      model: 'usuarios',              // Tabla referenciada → tabla 'usuarios'
-      key: 'id'                       // Columna referenciada → usuarios.id
-    },
-    onUpdate: 'CASCADE',              // Si cambia usuarios.id → actualiza aquí también
-    onDelete: 'CASCADE',              // Si se elimina el usuario → elimina sus items del carrito
-    validate: {                       // Validaciones de Sequelize (a nivel de aplicación)
-      notNull: {
-        msg: 'Debe especificar un usuario'   // Mensaje si es null
-      }
-    }
-  },
+  // Usuario propietario del item del carrito
+      usuarioId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+          model: 'usuarios',
+          key: 'id'
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'CASCADE',
+        validate: {
+          notNull: {
+            msg: 'Debe especificar un usuario'
+          }
+        }
+      },
 
-  // Columna 'productoId' → Clave foránea (FK) que apunta a la tabla 'productos'
-  // Indica QUÉ producto se agregó al carrito
-  productoId: {
-    type: DataTypes.INTEGER,           // Tipo INT, debe coincidir con productos.id
-    allowNull: false,                  // Obligatorio: todo item tiene un producto
-    references: {                      // Define la relación de FK en la BD
-      model: 'productos',             // Tabla referenciada → tabla 'productos'
-      key: 'id'                       // Columna referenciada → productos.id
-    },
-    onUpdate: 'CASCADE',              // Si cambia productos.id → actualiza aquí
-    onDelete: 'CASCADE',              // Si se elimina el producto → elimina del carrito
-    validate: {
-      notNull: {
-        msg: 'Debe especificar un producto'
-      }
-    }
-  },
+      // Producto agregado al carrito
+      productoId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+          model: 'productos',
+          key: 'id'
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'CASCADE',
+        validate: {
+          notNull: {
+            msg: 'Debe especificar un producto'
+          }
+        }
+      },
 
   // Columna 'cantidad' → Cuántas unidades de este producto hay en el carrito
   cantidad: {

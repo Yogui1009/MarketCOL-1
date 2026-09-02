@@ -3,6 +3,12 @@ const app = require('../server');
 const { generateToken } = require('../config/jwt');
 
 describe('Pruebas de caja blanca - auth', () => {
+  const tokenAdmin = () =>
+    generateToken({
+      id: 1,
+      email: 'admin@ecommerce.com', 
+      rol: 'administrador'
+    });
   test('debe rechazar login sin email y password', async () => {
     const response = await request(app)
       .post('/api/auth/login')
@@ -54,7 +60,7 @@ describe('Pruebas de caja blanca - auth', () => {
 
     const response = await request(app)
       .get('/api/auth/me')
-      .set('Authorization', `Bearer ${token}`);
+      .set('Authorization', `Bearer ${tokenAdmin()}`);
 
     expect(response.status).toBe(200);
     expect(response.body.success).toBe(true);
@@ -66,7 +72,7 @@ describe('Pruebas de caja blanca - auth', () => {
 
     const response = await request(app)
       .put('/api/auth/change-password')
-      .set('Authorization', `Bearer ${token}`)
+      .set('Authorization', `Bearer ${tokenAdmin()}`)
       .send({
         passwordActual: 'wrongpassword',
         passwordNueva: 'nuevapassword123'

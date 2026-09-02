@@ -33,6 +33,25 @@ const Categoria = require('../models/Categoria');
 // Importa el modelo Subcategoria desde models/Subcategoria.js → tabla 'Subcategoria'
 const Subcategoria = require('../models/Subcategoria');
 
+// Genera la información de paginación reutilizable
+const generarPaginacion = (count, pagina, limite) => ({
+  total: count,
+  pagina: Number.parseInt(pagina, 10),
+  limite: Number.parseInt(limite, 10),
+  totalPaginas: Math.ceil(count / Number.parseInt(limite, 10))
+});
+
+// Maneja respuestas de error de los controladores de pedidos
+const responderError = (res, nombreFuncion, mensaje, error) => {
+  console.error(`Error en ${nombreFuncion}:`, error);
+
+  return res.status(500).json({
+    success: false,
+    message: mensaje,
+    error: error.message
+  });
+};
+
 /**
  * Crear pedido desde el carrito (checkout) - CLIENTE
  * 
@@ -291,27 +310,21 @@ const getMisPedidos = async (req, res) => {
     
     // Responde con los pedidos y la paginación
     res.json({
-      success: true,
-      data: {
-        pedidos,
-        paginacion: {
-          total: count,
-          pagina: Number.parseInt(pagina),
-          limite: Number.parseInt(limite),
-          totalPaginas: Math.ceil(count / Number.parseInt(limite))
-        }
-      }
-    });
-    
-  } catch (error) {
-    console.error('Error en getMisPedidos:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error al obtener pedidos',
-      error: error.message
-    });
+  success: true,
+  data: {
+    pedidos,
+    paginacion: generarPaginacion(count, pagina, limite)
   }
-};
+});
+    
+ } catch (error) {
+  return responderError(
+    res,
+    'getMisPedidos',
+    'Error al obtener pedidos',
+    error
+  )};
+}
 
 /**
  * Obtener un pedido específico por ID - CLIENTE / ADMIN
@@ -544,27 +557,22 @@ const getAllPedidos = async (req, res) => {
     });
     
     // Responde con todos los pedidos y la paginación
-    res.json({
-      success: true,
-      data: {
-        pedidos,
-        paginacion: {
-          total: count,
-          pagina: Number.parseInt(pagina),
-          limite: Number.parseInt(limite),
-          totalPaginas: Math.ceil(count / Number.parseInt(limite))
-        }
-      }
-    });
+  res.json({
+  success: true,
+  data: {
+    pedidos,
+    paginacion: generarPaginacion(count, pagina, limite)
+  }
+});
     
   } catch (error) {
-    console.error('Error en getAllPedidos:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error al obtener pedidos',
-      error: error.message
-    });
-  }
+  return responderError(
+    res,
+    'getAllPedidos',
+    'Error al obtener pedidos',
+    error
+  );
+}
 };
 
 /**

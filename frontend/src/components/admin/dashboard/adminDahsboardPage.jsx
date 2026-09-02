@@ -30,7 +30,7 @@ const AdminDashboardPage = () => {
         const usuariosRes = await api.get('/admin/usuarios/stats');
         
         // Obtener productos para calcular stock bajo (asumimos que stock bajo es < 10)
-        const productosRes = await api.get('/admin/productos?limite=1000');
+        const productosRes = await api.get('/admin/productos?limite=100');
         const stockBajo = productosRes.data.data.productos.filter(p => p.stock < 10).length;
 
         setStats({

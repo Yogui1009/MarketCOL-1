@@ -35,54 +35,51 @@ const DetallePedido = sequelize.define('DetallePedido', {
 
   // Columna 'pedidoId' → Clave foránea (FK) que apunta a la tabla 'pedidos'
   // Indica A QUÉ pedido pertenece este detalle
-  pedidoId: {
-    type: DataTypes.INTEGER,           // Tipo INT, coincide con pedidos.id
-    allowNull: false,                  // Obligatorio: todo detalle pertenece a un pedido
-    references: {                      // Define la relación FK en MySQL
-      model: 'pedidos',               // Tabla referenciada → tabla 'pedidos'
-      key: 'id'                       // Columna referenciada → pedidos.id
-    },
-    onUpdate: 'CASCADE',              // Si cambia pedidos.id → actualiza aquí
-    onDelete: 'CASCADE',              // Si se elimina el pedido → elimina sus detalles
-    validate: {
-      notNull: {
-        msg: 'Debe especificar un pedido'
-      }
-    }
+ pedidoId: {
+  type: DataTypes.INTEGER,
+  allowNull: false,
+  references: {
+    model: 'pedidos',
+    key: 'id'
   },
+  onUpdate: 'CASCADE',
+  onDelete: 'CASCADE',
+  validate: {
+    notNull: {
+      msg: 'Debe especificar un pedido'
+    }
+  }
+},
 
-  // Columna 'productoId' → Clave foránea (FK) que apunta a la tabla 'productos'
-  // Indica QUÉ producto se compró en esta línea del pedido
-  productoId: {
-    type: DataTypes.INTEGER,           // Tipo INT, coincide con productos.id
-    allowNull: false,                  // Obligatorio: todo detalle tiene un producto
-    references: {
-      model: 'productos',             // Tabla referenciada → tabla 'productos'
-      key: 'id'                       // Columna referenciada → productos.id
-    },
-    onUpdate: 'CASCADE',              // Si cambia productos.id → actualiza aquí
-    onDelete: 'RESTRICT',             // RESTRICT → NO permite eliminar un producto que tiene pedidos
-    validate: {
-      notNull: {
-        msg: 'Debe especificar un producto'
-      }
-    }
+productoId: {
+  type: DataTypes.INTEGER,
+  allowNull: false,
+  references: {
+    model: 'productos',
+    key: 'id'
   },
+  onUpdate: 'CASCADE',
+  onDelete: 'RESTRICT',
+  validate: {
+    notNull: {
+      msg: 'Debe especificar un producto'
+    }
+  }
+},
 
-  // Columna 'cantidad' → Cuántas unidades de este producto se compraron
-  cantidad: {
-    type: DataTypes.INTEGER,           // Tipo INT (entero)
-    allowNull: false,                  // Obligatorio
-    validate: {
-      isInt: {                         // Valida que sea entero
-        msg: 'La cantidad debe ser un número entero'
-      },
-      min: {                           // Mínimo 1 unidad
-        args: [1],
-        msg: 'La cantidad debe ser al menos 1'
-      }
+cantidad: {
+  type: DataTypes.INTEGER,
+  allowNull: false,
+  validate: {
+    isInt: {
+      msg: 'La cantidad debe ser un número entero'
+    },
+    min: {
+      args: [1],
+      msg: 'La cantidad debe ser al menos 1'
     }
-  },
+  }
+},
 
   // Columna 'precioUnitario' → Precio del producto AL MOMENTO de la compra
   // Se guarda como "foto" del precio para mantener el historial

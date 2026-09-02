@@ -760,31 +760,40 @@ const productosData = {
  */
 
 /**
+ * Crea registros usando findOrCreate.
+ */
+const crearRegistros = async (
+  Modelo,
+  registros,
+  obtenerWhere,
+  obtenerDefaults,
+  mostrarNombre
+) => {
+  const resultados = [];
+
+  for (const registro of registros) {
+    const [resultado, created] = await Modelo.findOrCreate({
+      where: obtenerWhere(registro),
+      defaults: obtenerDefaults(registro)
+    });
+
+    resultados.push(resultado);
+
+    console.log(
+      `   ${created ? '✅' : 'ℹ️'} ${mostrarNombre(resultado)}`
+    );
+  }
+
+  return resultados;
+};
+
+/**
  * Crea un usuario si no existe.
  */
-const crearUsuarioSiNoExiste = async (
-  datos,
-  mensajeCreado,
-  mensajeExistente,
-  emailsAnteriores = []
-) => {
-  let usuarioExistente = await Usuario.findOne({
+const crearUsuarioSiNoExiste = async (datos, mensajeCreado, mensajeExistente) => {
+  const usuarioExistente = await Usuario.findOne({
     where: { email: datos.email }
   });
-
-  if (!usuarioExistente) {
-    for (const emailAnterior of emailsAnteriores) {
-      usuarioExistente = await Usuario.findOne({
-        where: { email: emailAnterior }
-      });
-
-      if (usuarioExistente) {
-        await usuarioExistente.update({ email: datos.email });
-        break;
-      }
-    }
-
-  }
 
   if (usuarioExistente) {
     console.log(mensajeExistente);
@@ -811,15 +820,14 @@ const crearUsuariosPrincipales = async () => {
       activo: true
     },
     '✅ Administrador creado\n   📧 Usuario: admin@MarketCOL.com\n   🔑 Password: admin1234\n',
-    '✅ Administrador ya existe\n',
-    ['admin@ecommerce.com']
+    '✅ Administrador ya existe\n'
   );
 
   await crearUsuarioSiNoExiste(
     {
       nombre: 'Auxiliar',
       apellido: 'Soporte',
-      email: 'auxiliar@ecommerce.com',
+      email: 'auxiliar@MarketCOL.com',
       password: 'aux123',
       rol: 'auxiliar',
       telefono: '3009876543',
@@ -827,8 +835,7 @@ const crearUsuariosPrincipales = async () => {
       activo: true
     },
     '✅ Auxiliar creado\n   📧 Usuario: auxiliar@ecommerce.com\n   🔑 Password: aux123\n',
-    '✅ Auxiliar ya existe\n',
-    ['auxiliar@MrketCOL.com']
+    '✅ Auxiliar ya existe\n'
   );
 };
 
@@ -879,20 +886,13 @@ const crearUsuarios = async () => {
 const crearProveedores = async () => {
   console.log('🏭 2. CREANDO PROVEEDORES BASE...\n');
 
-  const proveedoresCreados = [];
-
-  for (const proveedorData of proveedoresData) {
-    const [proveedor, created] = await Proveedor.findOrCreate({
-      where: { nombre: proveedorData.nombre },
-      defaults: proveedorData
-    });
-
-    proveedoresCreados.push(proveedor);
-
-    console.log(
-      `   ${created ? '✅' : 'ℹ️'} ${proveedor.nombre}`
-    );
-  }
+  const proveedoresCreados = await crearRegistros(
+    Proveedor,
+    proveedoresData,
+    proveedor => ({ nombre: proveedor.nombre }),
+    proveedor => proveedor,
+    proveedor => proveedor.nombre
+  );
 
   console.log(
     `\n✅ Total: ${proveedoresCreados.length} proveedores base disponibles\n`
@@ -907,20 +907,13 @@ const crearProveedores = async () => {
 const crearCategorias = async () => {
   console.log('📁 3. CREANDO CATEGORÍAS...\n');
 
-  const categorias = [];
-
-  for (const catData of categoriasData) {
-    const [categoria, created] = await Categoria.findOrCreate({
-      where: { nombre: catData.nombre },
-      defaults: catData
-    });
-
-    categorias.push(categoria);
-
-    console.log(
-      `   ${created ? '✅' : 'ℹ️'} ${categoria.nombre}`
-    );
-  }
+  const categorias = await crearRegistros(
+    Categoria,
+    categoriasData,
+    categoria => ({ nombre: categoria.nombre }),
+    categoria => categoria,
+    categoria => categoria.nombre
+  );
 
   console.log(
     `\n✅ Total: ${categorias.length} categorías disponibles\n`
@@ -940,33 +933,24 @@ const crearSubcategorias = async categorias => {
   for (const categoria of categorias) {
     console.log(`📁 ${categoria.nombre}:`);
 
-    const subsData = subcategoriasData[categoria.nombre];
+    const subsData = subcategoriasData[categoria.nombre] || [];
 
-    if (!subsData) {
-      continue;
-    }
+    const creadas = await crearRegistros(
+      Subcategoria,
+      subsData,
+      subcategoria => ({
+        nombre: subcategoria.nombre,
+        categoriaId: categoria.id
+      }),
+      subcategoria => ({
+        ...subcategoria,
+        categoriaId: categoria.id,
+        activo: true
+      }),
+      subcategoria => subcategoria.nombre
+    );
 
-    for (const subData of subsData) {
-      const [subcategoria, created] = await Subcategoria.findOrCreate({
-        where: {
-          nombre: subData.nombre,
-          categoriaId: categoria.id
-        },
-        defaults: {
-          nombre: subData.nombre,
-          descripcion: subData.descripcion,
-          categoriaId: categoria.id,
-          activo: true
-        }
-      });
-
-      subcategorias.push(subcategoria);
-
-      console.log(
-        `   ${created ? '✅' : 'ℹ️'} ${subcategoria.nombre}`
-      );
-    }
-
+    subcategorias.push(...creadas);
     console.log('');
   }
 
@@ -1133,7 +1117,7 @@ const mostrarResumen = async () => {
   console.log('🔑 CREDENCIALES DE ACCESO:\n');
 
   console.log('   👨‍💼 ADMINISTRADOR');
-  console.log('      Email: admin@MarketCOL.com');
+  console.log('      Email: admin@ecommerce.com');
   console.log('      Password: admin1234\n');
 
   console.log('   👤 AUXILIAR');

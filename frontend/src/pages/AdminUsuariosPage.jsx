@@ -89,7 +89,7 @@ const AdminUsuariosPage = () => {
     setLoading(true);
 
     try {
-      const response = await api.get('/admin/usuarios?limite=1000');
+      const response = await api.get('/admin/usuarios?limite=100');
 
       const data =
         response.data?.data?.usuarios ||
