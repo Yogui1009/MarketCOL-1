@@ -70,7 +70,7 @@ const AdminProductosPage = () => {
   const [paginaActual, setPaginaActual] = useState(1);
   const ITEMS_POR_PAGINA = 25;
 
-  const [formData, setFormData] = useState({
+  const [setFormData] = useState({
     nombre: '',
     descripcion: '',
     precio: '',
