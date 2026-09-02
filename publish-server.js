@@ -6,6 +6,7 @@ const { URL } = require('node:url');
 const publicPort = Number(process.env.PUBLIC_PORT || 80);
 const backendPort = Number(process.env.BACKEND_PORT || 3001);
 const buildDirectory = path.join(__dirname, 'frontend', 'build');
+
 const backendPrefixes = ['/api', '/uploads', '/images'];
 
 const mimeTypes = {
@@ -22,31 +23,70 @@ const mimeTypes = {
 };
 
 const isBackendRequest = (pathname) =>
-  backendPrefixes.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
+  backendPrefixes.some(
+    (prefix) =>
+      pathname === prefix ||
+      pathname.startsWith(`${prefix}/`)
+  );
 
 const proxyToBackend = (request, response, requestUrl) => {
+  const backendUrl = new URL(
+    requestUrl.pathname + requestUrl.search,
+    `http://127.0.0.1:${backendPort}`
+  );
+
   const proxyRequest = http.request(
     {
       hostname: '127.0.0.1',
       port: backendPort,
-      path: `${requestUrl.pathname}${requestUrl.search}`,
+      path: backendUrl.pathname + backendUrl.search,
       method: request.method,
+
       headers: {
         ...request.headers,
         host: `127.0.0.1:${backendPort}`
       }
     },
+
     (proxyResponse) => {
-      response.writeHead(proxyResponse.statusCode || 502, proxyResponse.headers);
+      const safeHeaders = Object.create(null);
+
+      for (const [key, value] of Object.entries(
+        proxyResponse.headers
+      )) {
+        const lowerKey = key.toLowerCase();
+
+        if (
+          lowerKey !== '__proto__' &&
+          lowerKey !== 'constructor' &&
+          lowerKey !== 'prototype'
+        ) {
+          safeHeaders[key] = value;
+        }
+      }
+
+      response.writeHead(
+        proxyResponse.statusCode || 502,
+        safeHeaders
+      );
+
       proxyResponse.pipe(response);
     }
   );
 
   proxyRequest.on('error', () => {
     if (!response.headersSent) {
-      response.writeHead(502, { 'Content-Type': 'application/json; charset=utf-8' });
+      response.writeHead(502, {
+        'Content-Type': 'application/json; charset=utf-8'
+      });
     }
-    response.end(JSON.stringify({ success: false, message: 'Backend no disponible' }));
+
+    response.end(
+      JSON.stringify({
+        success: false,
+        message: 'Backend no disponible'
+      })
+    );
   });
 
   request.pipe(proxyRequest);
@@ -54,48 +94,107 @@ const proxyToBackend = (request, response, requestUrl) => {
 
 const serveFrontend = (request, response, requestUrl) => {
   const requestedPath = decodeURIComponent(requestUrl.pathname);
-  const relativePath = requestedPath === '/' ? 'index.html' : requestedPath.slice(1);
-  const candidate = path.resolve(buildDirectory, relativePath);
+
+  const relativePath =
+    requestedPath === '/'
+      ? 'index.html'
+      : requestedPath.slice(1);
+
+  const candidate = path.resolve(
+    buildDirectory,
+    relativePath
+  );
+
   const buildRoot = path.resolve(buildDirectory);
-  const filePath = candidate.startsWith(`${buildRoot}${path.sep}`) ? candidate : path.join(buildRoot, 'index.html');
+
+  const filePath = candidate.startsWith(
+    `${buildRoot}${path.sep}`
+  )
+    ? candidate
+    : path.join(buildRoot, 'index.html');
 
   fs.stat(filePath, (statError, fileStats) => {
-    const fallback = path.join(buildRoot, 'index.html');
-    const selectedPath = !statError && fileStats.isFile() ? filePath : fallback;
+    const fallback = path.join(
+      buildRoot,
+      'index.html'
+    );
+
+    const selectedPath =
+      !statError && fileStats.isFile()
+        ? filePath
+        : fallback;
 
     fs.readFile(selectedPath, (readError, content) => {
       if (readError) {
-        response.writeHead(503, { 'Content-Type': 'text/plain; charset=utf-8' });
-        response.end('Frontend no compilado. Ejecute publish.ps1.');
+        response.writeHead(503, {
+          'Content-Type': 'text/plain; charset=utf-8'
+        });
+
+        response.end(
+          'Frontend no compilado. Ejecute publish.ps1.'
+        );
+
         return;
       }
 
       response.writeHead(200, {
-        'Content-Type': mimeTypes[path.extname(selectedPath).toLowerCase()] || 'application/octet-stream',
-        'Cache-Control': selectedPath.endsWith('index.html') ? 'no-cache' : 'public, max-age=31536000, immutable'
+        'Content-Type':
+          mimeTypes[
+            path.extname(selectedPath).toLowerCase()
+          ] || 'application/octet-stream',
+
+        'Cache-Control':
+          selectedPath.endsWith('index.html')
+            ? 'no-cache'
+            : 'public, max-age=31536000, immutable'
       });
+
       response.end(content);
     });
   });
 };
 
 const server = http.createServer((request, response) => {
-  const requestUrl = new URL(request.url || '/', `http://${request.headers.host || 'localhost'}`);
+  const requestUrl = new URL(
+    request.url || '/',
+    'http://127.0.0.1'
+  );
 
   if (isBackendRequest(requestUrl.pathname)) {
-    proxyToBackend(request, response, requestUrl);
+    proxyToBackend(
+      request,
+      response,
+      requestUrl
+    );
+
     return;
   }
 
-  serveFrontend(request, response, requestUrl);
+  serveFrontend(
+    request,
+    response,
+    requestUrl
+  );
 });
 
-server.listen(publicPort, '0.0.0.0', () => {
-  console.log(`Gateway publico escuchando en http://0.0.0.0:${publicPort}`);
-  console.log(`Backend interno: http://127.0.0.1:${backendPort}`);
-});
+server.listen(
+  publicPort,
+  '0.0.0.0',
+  () => {
+    console.log(
+      `Gateway publico escuchando en http://0.0.0.0:${publicPort}`
+    );
+
+    console.log(
+      `Backend interno: http://127.0.0.1:${backendPort}`
+    );
+  }
+);
 
 server.on('error', (error) => {
-  console.error(`No se pudo iniciar el gateway: ${error.message}`);
+  console.error(
+    `No se pudo iniciar el gateway: ${error.message}`
+  );
+
   process.exitCode = 1;
 });
