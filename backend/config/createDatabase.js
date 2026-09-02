@@ -4,7 +4,7 @@
  * ============================================
  * Este script crea la base de datos si no existe.
  * Se ejecuta UNA sola vez antes de iniciar el servidor
- * Se invoca con el comando: npm run init-db (definido en package.json)
+ * Se invoca con el comando: npm run init-db (definido en package.json
  */
 
 // Importa mysql2 en su versión con promesas (async/await) desde node_modules.
