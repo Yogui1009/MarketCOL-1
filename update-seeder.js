@@ -5,6 +5,18 @@ const path = require('node:path');
 const imagesFolder = path.join(__dirname, 'frontend', 'public', 'images');
 const actualFiles = {};
 
+// Función para normalizar un string para búsqueda fuzzy
+function normalize(str) {
+  return str
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9-]/g, '')
+    .replace(/-+/g, '-')
+    .replace(/(^-|-$)/g, '');
+}
+
 function walk(dir, category = '') {
   const files = fs.readdirSync(dir, { withFileTypes: true });
   for (const file of files) {
@@ -41,17 +53,7 @@ const categoryMap = {
   'FRUTAS Y VERDURAS': 'FRUTAS Y VERDURAS'
 };
 
-// Función para normalizar un string para búsqueda fuzzy
-function normalize(str) {
-  return str
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/[^a-z0-9-]/g, '')
-    .replace(/-+/g, '-')
-    .replace(/(^-|-$)/g, '');
-}
+
 
 // Función para encontrar el mejor archivo que coincida
 function findBestMatch(imageName, folderCategory) {
