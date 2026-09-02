@@ -7,7 +7,6 @@
 import React, { useEffect, useState, useMemo, useCallback, memo, useRef } from 'react';
 import { Container, Card, Table, Button, Form, Alert, Badge, Row, Col, Dropdown, InputGroup } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import ProductoForm from '../components/admin/productos/ProductoForm';
